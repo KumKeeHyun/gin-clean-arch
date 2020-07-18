@@ -1,0 +1,67 @@
+package handler
+
+import (
+	"net/http"
+
+	"github.com/KumKeeHyun/gin-clean-arch/app/domain/model"
+	"github.com/KumKeeHyun/gin-clean-arch/app/usecase"
+	"github.com/gin-gonic/gin"
+)
+
+type Handler struct {
+	nu usecase.NodeUsecase
+	su usecase.SensorUsecase
+}
+
+func NewHandler(nu usecase.NodeUsecase, su usecase.SensorUsecase) *Handler {
+	return &Handler{
+		nu: nu,
+		su: su,
+	}
+}
+
+func (h *Handler) GetAllInfo(c *gin.Context) {
+	nodes, err := h.nu.GetAllNodes()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, nodes)
+}
+
+func (h *Handler) RegisterNode(c *gin.Context) {
+	var node usecase.Node
+
+	if err := c.ShouldBindJSON(&node); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.nu.RegisterNode(&node); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, node)
+}
+
+func (h *Handler) GetSensorsInfo(c *gin.Context) {
+	sensors, err := h.su.GetAllSensors()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, sensors)
+}
+
+func (h *Handler) RegisterSensor(c *gin.Context) {
+	var sensor model.Sensor
+
+	if err := c.ShouldBindJSON(&sensor); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.su.RegisterSensor(&sensor); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, sensor)
+}
