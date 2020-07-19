@@ -34,17 +34,18 @@ func (su *sensorUsecase) GetRegister() ([]model.Sensor, error) {
 	return sensors, err
 }
 
-func (su *sensorUsecase) RegisterSensor(s *model.Sensor) error {
+func (su *sensorUsecase) RegisterSensor(s *model.Sensor) (*model.Sensor, error) {
 	newSensor := model.NewSensor(s.Name)
 	if err := su.sr.Create(&newSensor); err != nil {
-		return err
+		return nil, err
 	}
 	for i, v := range s.ValueList {
-		v.SensorUUID = newSensor.UUID
-		v.Index = i
-		if err := su.sr.CreateValue(&v); err != nil {
-			return err
+		newSensor.ValueList[i].SensorUUID = newSensor.UUID
+		newSensor.ValueList[i].ValueName = v.ValueName
+		newSensor.ValueList[i].Index = i
+		if err := su.sr.CreateValue(&newSensor.ValueList[i]); err != nil {
+			return nil, err
 		}
 	}
-	return nil
+	return &newSensor, nil
 }

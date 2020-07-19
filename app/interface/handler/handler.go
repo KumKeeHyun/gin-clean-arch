@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/KumKeeHyun/gin-clean-arch/app/domain/model"
+	"github.com/KumKeeHyun/gin-clean-arch/app/interface/presenter"
 	"github.com/KumKeeHyun/gin-clean-arch/app/usecase"
 	"github.com/gin-gonic/gin"
 )
@@ -30,17 +31,18 @@ func (h *Handler) GetAllInfo(c *gin.Context) {
 }
 
 func (h *Handler) RegisterNode(c *gin.Context) {
-	var node usecase.Node
+	var node presenter.Node
 
 	if err := c.ShouldBindJSON(&node); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.nu.RegisterNode(&node); err != nil {
+	new, err := h.nu.RegisterNode(&node)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, node)
+	c.JSON(http.StatusOK, *new)
 }
 
 func (h *Handler) GetSensorsInfo(c *gin.Context) {
@@ -59,9 +61,10 @@ func (h *Handler) RegisterSensor(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.su.RegisterSensor(&sensor); err != nil {
+	new, err := h.su.RegisterSensor(&sensor)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, sensor)
+	c.JSON(http.StatusOK, *new)
 }

@@ -19,8 +19,8 @@ func (nr *nodeRepository) GetAll() (n []model.Node, err error) {
 	return n, nr.db.Find(&n).Error
 }
 
-func (nr *nodeRepository) GetByUUID(nid string) (n model.Node, err error) {
-	return n, nr.db.Where("uuid=?", nid).Find(&n).Error
+func (nr *nodeRepository) GetByUUID(nid string) (n *model.Node, err error) {
+	return n, nr.db.Where("uuid=?", nid).Find(n).Error
 }
 
 func (nr *nodeRepository) Create(n *model.Node) error {

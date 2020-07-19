@@ -3,7 +3,7 @@ package nodeUsecase
 import (
 	"github.com/KumKeeHyun/gin-clean-arch/app/domain/model"
 	"github.com/KumKeeHyun/gin-clean-arch/app/domain/repository"
-	"github.com/KumKeeHyun/gin-clean-arch/app/usecase"
+	"github.com/KumKeeHyun/gin-clean-arch/app/interface/presenter"
 )
 
 type nodeUsecase struct {
@@ -18,16 +18,22 @@ func NewNodeUsecase(nr repository.NodeRepository, sr repository.SensorRepository
 	}
 }
 
-func (nu *nodeUsecase) GetAllNodes() ([]usecase.Node, error) {
+func (nu *nodeUsecase) GetAllNodes() ([]presenter.Node, error) {
 	ns, err := nu.nr.GetAll()
 	if err != nil {
 		return nil, err
 	}
-	nodes := usecase.ToNodes(ns)
+	nodes := presenter.ToNodes(ns)
 	for i := range nodes {
 		nodes[i].Sensors, err = nu.sr.GetByNodeUUID(nodes[i].UUID)
 		if err != nil {
 			return nil, err
+		}
+		for j := range nodes[i].Sensors {
+			nodes[i].Sensors[j].ValueList, err = nu.sr.GetValuesByUUID(nodes[i].Sensors[j].UUID)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return nodes, nil
@@ -41,10 +47,10 @@ func (nu *nodeUsecase) GetRegister() ([]model.Node, error) {
 	return nodes, nil
 }
 
-func (nu *nodeUsecase) RegisterNode(n *usecase.Node) error {
+func (nu *nodeUsecase) RegisterNode(n *presenter.Node) (*model.Node, error) {
 	newNode := model.NewNode(n.Name, n.Location)
 	if err := nu.nr.Create(&newNode); err != nil {
-		return err
+		return nil, err
 	}
 	for _, s := range n.Sensors {
 		ns := &model.NodeSensor{
@@ -52,8 +58,8 @@ func (nu *nodeUsecase) RegisterNode(n *usecase.Node) error {
 			SensorUUID: s.UUID,
 		}
 		if err := nu.nr.CreateNS(ns); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return &newNode, nil
 }
