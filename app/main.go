@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/KumKeeHyun/gin-clean-arch/app/interface/db/orm"
 	"github.com/KumKeeHyun/gin-clean-arch/app/interface/handler"
+	"github.com/KumKeeHyun/gin-clean-arch/app/interface/presenter"
 	"github.com/KumKeeHyun/gin-clean-arch/app/setting"
 	"github.com/KumKeeHyun/gin-clean-arch/app/usecase/nodeUsecase"
 	"github.com/KumKeeHyun/gin-clean-arch/app/usecase/sensorUsecase"
@@ -12,6 +13,7 @@ import (
 )
 
 func main() {
+	presenter.KafkaSetup()
 	setting.Setup()
 	orm.Setup()
 
@@ -35,6 +37,7 @@ func main() {
 		sg.GET("", h.GetSensorsInfo)
 		sg.POST("", h.RegisterSensor)
 	}
+	r.GET("/kafkaManager", h.KafkaManager)
 
 	r.Run()
 }

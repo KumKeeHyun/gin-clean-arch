@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/KumKeeHyun/gin-clean-arch/app/domain/model"
 	"github.com/KumKeeHyun/gin-clean-arch/app/interface/presenter"
 	"github.com/KumKeeHyun/gin-clean-arch/app/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 type Handler struct {
@@ -42,6 +44,11 @@ func (h *Handler) RegisterNode(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	presenter.EnrichmentManager.Submit(presenter.KafkaMessage{
+		Type: presenter.NewNode,
+		Msg:  *new,
+	})
 	c.JSON(http.StatusOK, *new)
 }
 
@@ -66,5 +73,43 @@ func (h *Handler) RegisterSensor(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	presenter.EnrichmentManager.Submit(presenter.KafkaMessage{
+		Type: presenter.NewSensor,
+		Msg:  *new,
+	})
 	c.JSON(http.StatusOK, *new)
+}
+
+func (h *Handler) KafkaManager(c *gin.Context) {
+	listen := make(chan interface{})
+	presenter.EnrichmentManager.Register(listen)
+
+	conn, err := websocket.Upgrade(c.Writer, c.Request, nil, 1024, 0124)
+	if err != nil {
+		log.Printf("upgrade: %s", err.Error())
+	}
+
+	defer func() {
+		presenter.EnrichmentManager.Unregister(listen)
+		close(listen)
+		conn.Close()
+	}()
+
+	nodeInfo, err := h.nu.GetRegister()
+	sensorInfo, err := h.su.GetRegister()
+	conn.WriteJSON(presenter.KafkaMessage{
+		Type: presenter.Init,
+		Msg: map[string]interface{}{
+			"node_info":   nodeInfo,
+			"sensor_info": sensorInfo,
+		},
+	})
+
+	for {
+		select {
+		case m := <-listen:
+			err = conn.WriteJSON(m)
+		}
+	}
 }

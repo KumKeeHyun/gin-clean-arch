@@ -1,6 +1,8 @@
 package sensorUsecase
 
 import (
+	"fmt"
+
 	"github.com/KumKeeHyun/gin-clean-arch/app/domain/model"
 	"github.com/KumKeeHyun/gin-clean-arch/app/domain/repository"
 )
@@ -39,13 +41,16 @@ func (su *sensorUsecase) RegisterSensor(s *model.Sensor) (*model.Sensor, error) 
 	if err := su.sr.Create(&newSensor); err != nil {
 		return nil, err
 	}
+	fmt.Println(s)
+	fmt.Println(s.ValueList)
 	for i, v := range s.ValueList {
-		newSensor.ValueList[i].SensorUUID = newSensor.UUID
-		newSensor.ValueList[i].ValueName = v.ValueName
-		newSensor.ValueList[i].Index = i
-		if err := su.sr.CreateValue(&newSensor.ValueList[i]); err != nil {
+		v.SensorUUID = newSensor.UUID
+		v.Index = i
+		fmt.Println(v)
+		if err := su.sr.CreateValue(&v); err != nil {
 			return nil, err
 		}
+		newSensor.ValueList = append(newSensor.ValueList, v)
 	}
 	return &newSensor, nil
 }
