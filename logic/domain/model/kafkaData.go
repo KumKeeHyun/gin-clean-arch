@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type sensorData struct {
+type SensorData struct {
 	NID       string
 	Values    []float64
 	Timestamp time.Time
@@ -10,5 +10,5 @@ type sensorData struct {
 
 type KafkaData struct {
 	Key   string
-	Value sensorData
+	Value SensorData
 }

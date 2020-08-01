@@ -28,7 +28,7 @@ func (lcuc *logicCoreUsecase) ToLogicData(kd *model.KafkaData) (model.LogicData,
 
 func (lcuc *logicCoreUsecase) ToDocument(ld *model.LogicData) model.Document {
 	return model.Document{
-		Index: ld.SName + ld.NodeInfo.Group,
-		Doc:   ld,
+		Index: ld.SName + " " + ld.NodeInfo.Group,
+		Doc:   *ld,
 	}
 }

@@ -47,7 +47,8 @@ func NewLogicCoreUsecase(mr repository.MetaRepo, ks service.KafkaConsumerGroup, 
 
 func (lu *logicCoreUsecase) SetLogicChain(r *model.ChainRequest) error {
 	// TODO : check chain request validate
-	return lu.ls.CreateAndStartLogic(r)
+	lu.ls.CreateAndStartLogic(r)
+	return nil
 }
 
 func (lu *logicCoreUsecase) RemoveLogicChain(lname string) error {

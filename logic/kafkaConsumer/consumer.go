@@ -25,7 +25,14 @@ func (c *consumer) run(out chan<- model.KafkaData) {
 			fmt.Printf("consumer stop\n")
 			return
 		case <-time.After(3 * time.Second):
-			// doSomthing
+			out <- model.KafkaData{
+				Key: "sensor_1",
+				Value: model.SensorData{
+					NID:       "node_1",
+					Values:    []float64{0.032, 0.24},
+					Timestamp: time.Now(),
+				},
+			}
 		}
 	}
 }

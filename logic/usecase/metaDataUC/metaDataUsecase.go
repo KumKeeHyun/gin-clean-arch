@@ -11,6 +11,13 @@ type metaDataUsecase struct {
 	ls service.LogicCore
 }
 
+func NewMetaDataUsecase(mr repository.MetaRepo, ls service.LogicCore) *metaDataUsecase {
+	return &metaDataUsecase{
+		mr: mr,
+		ls: ls,
+	}
+}
+
 func (mu *metaDataUsecase) NewNode(key string, n *model.Node) (*model.Node, error) {
 	err := mu.mr.NewNode(key, n)
 	if err != nil {
